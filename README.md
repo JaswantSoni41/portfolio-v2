@@ -1,4 +1,4 @@
-# Modern Developer Portfolio
+# Modern Developer Portfolio 
 
 A production-ready portfolio website built with Next.js 14, TypeScript, Tailwind CSS, Framer Motion, and MongoDB.
 
