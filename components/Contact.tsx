@@ -25,7 +25,7 @@ export default function Contact() {
 
     const onSubmit = async (data: ContactFormData) => {
         try {
-            const response = await fetch("https://formsubmit.co/ajax/jaswantsoni41@gmail.com", {
+            const response = await fetch(`https://formsubmit.co/ajax/${process.env.NEXT_PUBLIC_FORM_TOKEN}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
