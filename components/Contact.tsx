@@ -1,23 +1,54 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import SectionHeader from "./SectionHeader";
 
+type ContactFormData = {
+    name: string;
+    email: string;
+    message: string;
+};
+
 export default function Contact() {
-    const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+    const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { isSubmitting },
+    } = useForm<ContactFormData>();
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setStatus("submitting");
+    const onSubmit = async (data: ContactFormData) => {
+        try {
+            const response = await fetch("https://formsubmit.co/ajax/jaswantsoni41@gmail.com", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setStatus("success");
-    }
+            const result = await response.json();
+            if (result.success === "true") {
+                setStatus("success");
+                // alert("Message submitted successfully!");
+                reset();
+                setTimeout(() => setStatus("idle"), 5000);
+            } else {
+                setStatus("error");
+                // alert("Submission failed. Please try again.");
+            }
+        } catch (err) {
+            setStatus("error");
+            // alert("There was an error sending your message.");
+        }
+    };
 
     return (
         <section id="contact" className="py-32 bg-background relative overflow-hidden">
@@ -35,7 +66,7 @@ export default function Contact() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     viewport={{ once: true }}
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSubmit(onSubmit)}
                     className="space-y-6 bg-card/20 backdrop-blur-md p-8 rounded-3xl border border-white/5 shadow-2xl"
                 >
                     <div className="grid sm:grid-cols-2 gap-6">
@@ -46,6 +77,7 @@ export default function Contact() {
                                 placeholder="John Doe"
                                 required
                                 className="bg-white/5 border-white/10 focus:border-primary/50 text-white placeholder:text-muted-foreground/50 h-12 rounded-xl"
+                                {...register("name")}
                             />
                         </div>
                         <div className="space-y-2">
@@ -56,6 +88,7 @@ export default function Contact() {
                                 placeholder="john@example.com"
                                 required
                                 className="bg-white/5 border-white/10 focus:border-primary/50 text-white placeholder:text-muted-foreground/50 h-12 rounded-xl"
+                                {...register("email")}
                             />
                         </div>
                     </div>
@@ -66,15 +99,16 @@ export default function Contact() {
                             placeholder="Your message..."
                             className="min-h-[150px] bg-white/5 border-white/10 focus:border-primary/50 text-white placeholder:text-muted-foreground/50 resize-none rounded-xl"
                             required
+                            {...register("message")}
                         />
                     </div>
 
                     <Button
                         type="submit"
                         className="w-full h-12 text-lg font-medium bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all active:scale-95 rounded-xl"
-                        disabled={status === "submitting"}
+                        disabled={isSubmitting}
                     >
-                        {status === "submitting" ? (
+                        {isSubmitting ? (
                             <span className="flex items-center gap-2">
                                 <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                 Sending...
@@ -89,6 +123,15 @@ export default function Contact() {
                             className="text-green-400 text-center font-medium bg-green-400/10 py-2 rounded-lg border border-green-400/20"
                         >
                             Message sent successfully!
+                        </motion.p>
+                    )}
+                    {status === "error" && (
+                        <motion.p
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-red-400 text-center font-medium bg-red-400/10 py-2 rounded-lg border border-red-400/20"
+                        >
+                            There was an error sending your message.
                         </motion.p>
                     )}
                 </motion.form>
